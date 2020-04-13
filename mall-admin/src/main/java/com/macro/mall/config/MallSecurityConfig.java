@@ -31,6 +31,10 @@ public class MallSecurityConfig extends SecurityConfig {
     @Autowired
     private UmsResourceService resourceService;
 
+    /**
+     * 定义用户服务
+     * @return
+     */
     @Bean
     public UserDetailsService userDetailsService() {
         //获取登录用户信息

@@ -24,6 +24,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    /**
+     * 用户动态资源，url权限管理
+     */
     @Autowired(required = false)
     private DynamicSecurityService dynamicSecurityService;
 
@@ -31,13 +34,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity
                 .authorizeRequests();
-        //不需要保护的资源路径允许访问
-        for (String url : ignoreUrlsConfig().getUrls()) {
-            registry.antMatchers(url).permitAll();
+
+
+        // 白名单
+        {
+            //不需要保护的资源路径允许访问
+            for (String url : ignoreUrlsConfig().getUrls()) {
+                registry.antMatchers(url).permitAll();
+            }
+            //允许跨域请求的OPTIONS请求
+            registry.antMatchers(HttpMethod.OPTIONS)
+                    .permitAll();
         }
-        //允许跨域请求的OPTIONS请求
-        registry.antMatchers(HttpMethod.OPTIONS)
-                .permitAll();
+
         // 任何请求需要身份认证
         registry.and()
                 .authorizeRequests()
@@ -52,13 +61,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // 自定义权限拒绝处理类
                 .and()
                 .exceptionHandling()
+                // 没有访问权限
                 .accessDeniedHandler(restfulAccessDeniedHandler())
+                // 未登录或登录过期
                 .authenticationEntryPoint(restAuthenticationEntryPoint())
                 // 自定义权限拦截器JWT过滤器
                 .and()
+                // 添加jwt验证过滤器
                 .addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         //有动态权限配置时添加动态权限校验过滤器
         if(dynamicSecurityService!=null){
+            // 使用的模板方法模式，把流程和元素都定义好了，暴露一部分service，可以用户自定义，以达到扩展的目的
             registry.and().addFilterBefore(dynamicSecurityFilter(), FilterSecurityInterceptor.class);
         }
     }

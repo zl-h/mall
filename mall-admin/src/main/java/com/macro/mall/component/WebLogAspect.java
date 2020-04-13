@@ -4,8 +4,10 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.macro.mall.bo.WebLog;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.marker.Markers;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -37,23 +39,58 @@ import java.util.Map;
 @Aspect
 @Component
 @Order(1)
+@Slf4j
 public class WebLogAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebLogAspect.class);
 
+    /**
+     * 定义一个切点
+     */
     @Pointcut("execution(public * com.macro.mall.controller.*.*(..))")
     public void webLog() {
     }
 
+    /**
+     * 连接点
+     * 通知-增强 增强是织入到目标类连接点上的一段程序代码
+     * 之前需要做什么
+     * @param joinPoint
+     * @throws Throwable
+     */
     @Before("webLog()")
     public void doBefore(JoinPoint joinPoint) throws Throwable {
+        LOGGER.info("doBefore");
     }
 
+    /**
+     * 之前需要做什么
+     * @param joinPoint
+     * @throws Throwable
+     */
+    @After("webLog()")
+    public void doAfter(JoinPoint joinPoint) throws Throwable {
+        LOGGER.info("doAfter");
+    }
+
+    /**
+     * 之后需要做什么
+     * @param ret
+     * @throws Throwable
+     */
     @AfterReturning(value = "webLog()", returning = "ret")
     public void doAfterReturning(Object ret) throws Throwable {
+        LOGGER.info("doAfterReturning");
     }
 
+    /**
+     * 环绕通知
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
     @Around("webLog()")
     public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        LOGGER.info("doAround");
         long startTime = System.currentTimeMillis();
         //获取当前请求对象
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -86,6 +123,9 @@ public class WebLogAspect {
         logMap.put("spendTime",webLog.getSpendTime());
         logMap.put("description",webLog.getDescription());
 //        LOGGER.info("{}", JSONUtil.parse(webLog));
+        // log.info 如果有多个参数，第一个为 format，其余的为参数
+        log.info("weblog记录为" + JSONObject.toJSONString(webLog));
+        log.info("logMap记录为" + JSONObject.toJSONString(logMap));
         LOGGER.info(Markers.appendEntries(logMap), JSONUtil.parse(webLog).toString());
         return result;
     }

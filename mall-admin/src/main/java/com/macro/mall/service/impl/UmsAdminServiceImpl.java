@@ -307,6 +307,7 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         //获取用户信息
         UmsAdmin admin = getAdminByUsername(username);
         if (admin != null) {
+            // 获取资源信息
             List<UmsResource> resourceList = getResourceList(admin.getId());
             return new AdminUserDetails(admin,resourceList);
         }

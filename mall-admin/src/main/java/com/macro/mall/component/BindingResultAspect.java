@@ -1,6 +1,7 @@
 package com.macro.mall.component;
 
 import com.macro.mall.common.api.CommonResult;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,6 +18,7 @@ import org.springframework.validation.FieldError;
 @Aspect
 @Component
 @Order(2)
+@Slf4j
 public class BindingResultAspect {
     @Pointcut("execution(public * com.macro.mall.controller.*.*(..))")
     public void BindingResult() {
